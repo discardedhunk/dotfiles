@@ -1,0 +1,21 @@
+[user]
+	name = Vince Allen, Jason LaCarrubba
+	email = vince@spotify.com, jason@spotify.com
+	initials =    JL
+[push]
+	default = current
+[color]
+	diff = auto
+	status = auto
+	branch = auto
+[core]
+	#autocrlf = input
+	#safecrlf = true
+	excludesfile = /Users/jason/.gitignore
+[branch]
+	autosetuprebase = always
+
+[url "jason@git.spotify.net"]
+	insteadof = git@git.spotify.net
+[alias]
+  graph = log --all --abbrev-commit --date=short --full-history --graph --format=format:'%C(bold blue)%h%C(reset)\t%C(bold white)%an, %ar (committed %cr)%C(reset)%C(bold green)%d%C(reset)%n       \t%C(white)%s%C(reset)%n'

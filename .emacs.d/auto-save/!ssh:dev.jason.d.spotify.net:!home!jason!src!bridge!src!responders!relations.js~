@@ -1,0 +1,49 @@
+(function() {
+
+  var Link = Spotify.Link;
+  var Responder = Spotify.App.Responder;
+
+  new Responder({
+    _ready: false,
+
+    init: function(core) {
+      var service = this.service = core.socialgraph;
+      service.onReady(this.start, this);
+    },
+
+    start: function() {
+      this._ready = true;
+      this.unqueue();
+    },
+
+    reply: function(reply,args, items) {
+
+    },
+
+    handleError: function(reply, code) {
+
+    },
+
+    '@relations_subscribers_users_snapshot': function() {},
+
+    '@relations_subscriptions_users_snapshot': function() {},
+
+    '@relations_blocked_users_snapshot': function() {},
+
+    '@relations_dismissed_users_snapshot': function() {},
+
+    '@relations_hidden_users_snapshot': function() {},
+
+    '@relations_block': function() {},
+
+    '@relations_dismiss': function() {},
+
+    '@relations_subscribe': function() {},
+
+    '@relations_unsubscribe': function() {},
+
+    '@relations_block': function() {},
+
+    '@relations_unblock': function() {},
+  });
+})();

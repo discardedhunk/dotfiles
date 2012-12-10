@@ -1,0 +1,83 @@
+/**
+ * The SocialGraph Service
+ *
+ * @constructor
+ * @class SocialGraph
+ */
+Spotify.Services.SocialGraph = (function() {
+
+  var _self;
+
+  var _gateway;
+
+  var _schema;
+
+  var exports = {
+    /**
+     *
+     *
+     * @public
+     * @name Spotify.Services.SocialGraph#getSubscribers
+     * @function
+     *
+     */
+    getSubscribers: function(owner, length) {
+      var requestUri = 'hm://socialgraph/subscribers/user/';
+      requestUri += owner;
+
+      var params = {
+        uri: requestUri,
+        method: 'GET'
+      };
+
+      var args = [_schema.msg('UserListRequest')];
+      var types = [_schema.msg('UserListResponse')];
+
+      var data = [{count: 10, last_result: ''}];
+
+      var success = function() {
+        console.log(arguments);
+      };
+
+      var error = function() {
+        debugger;
+      };
+
+      var req = new Spotify.Hermes.ProtobufRequest(params, data, args, types);
+      req.send(_gateway, success, error, false, false, 'socialgraph');
+    },
+    /**
+     * Initializes the service.
+     *
+     * @public
+     * @name Spotify.Services.SocialGraph#init
+     * @param {Spotify.Gateway} gateway The gateway for talking to the AP.
+     * @param {Spotify.Services.User} userService The user service.
+     * @function
+     *
+     */
+    init: function(gateway, userService) {
+      Spotify.EventTarget.call(this);
+
+      _self = this;
+      _gateway = gateway;
+
+      try {
+        _schema = new Spotify.Protobuf.Schema(
+            [], null, null, null
+            );
+
+        _schema.id = 'socialgraph';
+        _schema.type = 'proto';
+        _schema.setData(protoData);
+        _schema.encode();
+
+        _onSchemaCreated.call(this, _onSchemaCreated);
+      } catch (e) {
+        throw (e);
+      }
+    }
+  };
+
+  return exports;
+});

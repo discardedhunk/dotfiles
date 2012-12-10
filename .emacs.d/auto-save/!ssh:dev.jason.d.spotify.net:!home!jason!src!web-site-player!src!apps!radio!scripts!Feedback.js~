@@ -1,0 +1,43 @@
+var Feedback = function() {
+  var addFeedback = function(track, type) {
+  try {
+    clog('adding ' + type + ' feedback for ' + track);
+    if (type == 'up')
+      this._radio.addLikedTrack(track);
+
+    var self = this;
+    if (!self._info.id) {
+      clog('adding station before adding feedback');
+      self._add(function() {
+        clog('added station. now add feedback');
+        self.addFeedback(track, type);
+      });
+      return;
+    }
+
+    var uri = track.replace('spotify:track:', '');
+    var feedback = {uri: uri, type: type};
+    var req = self._radio._hermes.get('hm://radio/stations/' + self._info.id + '/feedback/',
+                                      [],
+                                      [self._radio._schema.type('Feedback')]);
+    req.method = 'POST';
+    req.send(feedback)
+       .done(function() {
+          clog('success adding feedback :)');
+          // TODO update thumb counts
+          self._updatePlaylist(type === 'up');
+        })
+       .fail(function() {
+          clog('could not add feedback :(');
+          self._updatePlaylist(type === 'up'); // TODO(erikber): remove this! when we fix the backend exceptions
+        });
+  } catch (e) {
+    clog('error making feedback call: ' + e);
+  }
+};
+
+  // public
+  var f = {};
+ 
+  return f;
+};

@@ -1,0 +1,307 @@
+'use strict';
+
+require(['$api/search#Search', 'scripts/eventhandler', 'scripts/searchUtil', '$api/models#Observable',
+  '$api/models'], function(search, eh, searchUtil, Observable, models) {
+  var events = new eh.EventHandler(SearchWidget), sw, util;
+  var allowedLinkTypes = [1, // artist
+    2, // album
+    4, // track
+    5, // playlist
+    15]; //radio
+  var searchContainers = [
+    'artists',
+    'tracks',
+    'albums'
+    //'playlists'
+  ];
+  var maxSearchResultsPerContainer = 3;
+
+  var handleClick = function handleClick(e) {
+    for (var a = e.target; a;) {
+      if (a.tagName !== 'A' && a.hasClass('search')) {
+        e.preventDefault();
+        e.stopPropagation();
+        sw.show();
+        return;
+      } else if (a.tagName === 'A') {
+        e.preventDefault();
+        e.stopPropagation();
+        var seed = a.href.toSpotifyURI().replace('spotify:radio:', 'spotify:');
+        sw.dispatchEvent({type: 'open-uri', seed: seed, elClass: a.className});
+        sw.hide();
+        return;
+      }
+      a = a.parentNode;
+    }
+  };
+
+  /**
+   * SearchWidget class.
+   * @constructor
+   */
+  var SearchWidget = function SearchWidget(node, u) {
+    Observable.call(this);
+    this.widgetContainer = node[0];
+    util = u;
+    searchUtil.init(util);
+    sw = this;
+    this.init();
+
+    /* Add Close to search */
+    var closeSearch = $$('.auto-completeForm');
+    var closeSearchImg = new Element('#close-search');
+    closeSearch.adopt(closeSearchImg);
+    events.listen(closeSearchImg, 'click', function(e) { e.preventDefault(); e.stopPropagation(); sw.clear(); });
+
+    events.listen(sw.widgetContainer, 'click', handleClick);
+  };
+
+  SearchWidget.prototype = new Observable();
+  SearchWidget.prototype.constructor = SearchWidget;
+
+  /**
+    * Triggered when a valid Spotify URI is searched for
+    */
+  SearchWidget.prototype.onURISearch = function onURISearch() {
+    util.console.error('Tokenize callback');
+  };
+
+  /**
+   * Initialize SearchWidget
+   */
+  SearchWidget.prototype.init = function init() {
+    if (!this.searchHandler) {
+      this.searchHandler = searchUtil.throttle(function(query, callback) {
+        searchUtil.doSearch(search, query, callback, models);
+      }, 500);
+    }
+    this.initInputField();
+    this.initKeyboardNav();
+
+    if (this.initialResults) {
+      this.setInitialResults(this.initialResults);
+    }
+  };
+
+  SearchWidget.prototype.show = function show() {
+    sw.widgetContainer.setStyle('display', 'block');
+    sw.widgetContainer.getElement('input').focus();
+  };
+
+  SearchWidget.prototype.hide = function hide() {
+    sw.widgetContainer.setStyle('display', 'none');
+  };
+
+  /**
+    * Sets initial results for search widget
+    */
+  SearchWidget.prototype.setInitialResults = function setInitialResults(results) {
+    var container = this.widgetContainer.getElement('.albums');
+    if (container) container.setStyle('display', 'none');
+    if (results) this.initialResults = results;
+    for (var type in this.initialResults) {
+      this.tokenInput.addTokens(this.initialResults[type], type);
+    }
+  };
+
+  /**
+   * Initializes keyboard navigation for search widget
+   */
+  SearchWidget.prototype.initKeyboardNav = function initKeyboardNav() {
+    events
+      .listen(window, 'keydown', function(e) {
+          var upArrow = e.keyCode === 38;
+          var downArrow = e.keyCode === 40;
+          var enter = e.keyCode === 13;
+          var escape = e.keyCode === 27;
+
+          var links = sw.widgetContainer.getElements('a');
+          var selected_link = sw.widgetContainer.getElements('a.selected').pop();
+          var selected_index = links.indexOf(selected_link);
+
+          /* Escape */
+          if (escape === true) {
+            this.hide();
+          }
+
+          /* Enter */
+          if (enter === true) {
+            if (selected_index > -1) {
+              this.onEnter({
+                'target': selected_link,
+                'currentTarget': null,
+                'preventDefault': function() {return false;}
+              });
+              this.hide();
+            }
+            return false;
+          }
+
+          /* Up Arrow */
+          if (upArrow) {
+            if (selected_index === -1) {
+              $$(links[links.length - 1]).addClass('selected');
+            } else {
+              if (selected_index > 0) {
+                $$(selected_link).removeClass('selected');
+                $$(links[selected_index - 1]).addClass('selected');
+              }
+            }
+          }
+
+          /* Down Arrow */
+          if (downArrow) {
+            if (selected_index === -1) {
+              $$(links[0]).addClass('selected');
+            } else {
+              if (selected_index < links.length - 1) {
+                $$(selected_link).removeClass('selected');
+                $$(links[selected_index + 1]).addClass('selected');
+              }
+            }
+          }
+        }.bind(this));
+  };
+
+  /**
+    * Creates input field for autocomplete search and attaches appropriate events
+    */
+  SearchWidget.prototype.initInputField = function initInputField() {
+    this.tokenInput = new TokenInput('uris');
+    this.tokenInput.callback = this.onURISearch;
+    this.tokenInput.searchHandler = this.searchHandler;
+    this.tokenInput.resultHandler = this.onSearchResults;
+
+    //Create element that will house search results
+    var outputElement = document.createElement('div');
+    outputElement.tabIndex = 1;
+    $$(outputElement).addClass('auto-complete');
+    $$(outputElement).addClass('show');
+    $$(outputElement).addClass('search');
+
+    this.tokenInput.node.appendChild(outputElement);
+    this.widgetContainer.adopt(this.tokenInput.node);
+
+    for (var i = 0, l = searchContainers.length; i < l; i++) {
+      var c = document.createElement('div');
+      $$(c).addClass(searchContainers[i]);
+      $$(c).addClass('search');
+      var containerLabel = document.createElement('span');
+      containerLabel.textContent = searchContainers[i];
+      c.appendChild(containerLabel);
+
+      outputElement.appendChild(c);
+    }
+    return this;
+  };
+
+  /**
+    * Clears autocomplete tokens
+    */
+  SearchWidget.prototype.clear = function clear() {
+    this.tokenInput.input.value = '';
+    this.tokenInput.input.focus();
+    this.setInitialResults();
+    return this;
+  };
+
+  /************ TokenInput Class - Represents the input field where searches are performed **************/
+  /**
+   * Input control with token thingies.
+   * @constructor
+   */
+  function TokenInput() {
+    var ti = this;
+    ti.input = document.createElement('input');
+    ti.input.id = 'autocompleteSearchWidget';
+    ti.input.addClass('search');
+    ti.node = document.createElement('div');
+    ti.node.className = 'input token-input';
+    ti.node.appendChild(ti.input);
+
+    events
+      .listen(ti.input, 'input', function(e) {
+          if (ti.input.value.length > 0) {
+            if (ti.input.value.indexOf('spotify:') > -1) {
+              sw.dispatchEvent({type: 'open-uri', seed: ti.input.value, elClass: 'searchPaste'});
+              sw.hide();
+              ti.input.value = '';
+              return;
+            }
+            ti.searchHandler(ti.input.value, function(result, type, query) {
+              if (result !== null) {
+                if (query && ti.input.value === query) ti.addTokens(result, type);
+              }
+            });
+          } else {
+            sw.setInitialResults();
+          }
+        })
+
+        .listen(ti.input, 'focus', function(e) {
+          $$(ti.node).addClass('focus');
+        })
+
+        .listen(ti.input, 'blur', function(e) {
+          $$(ti.node).removeClass('focus');
+        });
+  }
+
+  TokenInput.prototype.addTokens = function(searchResults, type) {
+    var ti = this;
+    var val = ti.input.value;
+    //Locate the appropriate container to place result
+    var container = ti.node.getElement('.' + type);
+
+    if (container) {
+      container.setStyle('display', 'block');
+      ti.clear(container);
+      searchResults.each(function(searchResult) {
+        var containerLinks = container.getElements('a'),
+            resultLink = document.createElement('a'),
+            imgDiv = document.createElement('div');
+
+        resultLink.uri = searchResult.uri;
+        resultLink.href = searchResult.uri.replace('spotify:', 'spotify:radio:').decodeForLink().toSpotifyURL();
+        resultLink.addClass('search');
+        var resultImg = new Image();
+        imgDiv.addClass('searchImg');
+        imgDiv.addClass('sp-image-placeholder-visible');
+        resultLink.appendChild(imgDiv);
+        resultImg.onload = function(e) {searchUtil.setBg(e, resultLink);};
+        resultImg.src = searchResult.image;
+
+        var resultLabel = document.createElement('strong');
+        resultLabel.textContent = searchResult.name.decodeForText();
+        resultLink.appendChild(resultLabel);
+
+        container.appendChild(resultLink);
+        searchUtil.decorate(type, resultLink, models);
+      });
+    }
+  };
+
+  TokenInput.prototype.clear = function(context) {
+    var ti = this;
+    var searchLinks = context.getElements('a');
+
+    searchLinks.each(function(link) {
+      var node = link;
+      if (node.parentNode) node.parentNode.removeChild(node);
+    });
+    return ti;
+  };
+
+  TokenInput.prototype.disable = function() {
+    this.input.disabled = true;
+    return this;
+  };
+
+  TokenInput.prototype.enable = function() {
+    this.input.disabled = false;
+    return this;
+  };
+
+  exports.SearchWidget = SearchWidget;
+});
+
