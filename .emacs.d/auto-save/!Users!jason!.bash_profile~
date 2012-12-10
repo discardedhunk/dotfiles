@@ -1,4 +1,0 @@
-[[ -s /Users/jason/.nvm/nvm.sh ]] && . /Users/jason/.nvm/nvm.sh  # This loads NVM
-nvm use v0.8.15
-
-
