@@ -1,0 +1,21 @@
+[user]
+	name = Jason LaCarrubba
+	email = jayubba@gmail.com
+	initials = JL
+[credential]
+	helper = osxkeychain
+[push]
+	default = current
+[color]
+	diff = auto
+	status = auto
+	branch = auto
+[core]
+	autocrlf = input
+	safecrlf = true
+	excludesfile = /Users/jason/.gitignore
+	editor = emacs
+[branch]
+	autosetuprebase = always
+[url "jason@git.spotify.net"]
+	insteadof = git@git.spotify.net
