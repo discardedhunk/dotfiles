@@ -43,7 +43,7 @@
 (setq mike:i-am-a-mac (boundp 'mac-command-modifier))
 (if mike:i-am-a-mac (setq mac-command-modifier 'meta))
 
-(line-number-mode t)
+;;(line-number-mode t)
 (global-linum-mode t)
 
 (transient-mark-mode t)
@@ -364,6 +364,9 @@
              (local-set-key "\C-cv" 'my-perl-comment2)
              )))
 
+(add-to-list 'load-path "~/.emacs.d/flymake-easy")
+(require 'flymake-easy)
+
 
 ;;;;;;;;;;
 ;;;  ruby-mode
@@ -371,17 +374,20 @@
 ;;;
 ;;;  http://www.emacswiki.org/cgi-bin/wiki/FlymakeRuby
 ;;;
-(require 'flymake)
-(defun flymake-ruby-init ()
-  (let* ((temp-file   (flymake-init-create-temp-buffer-copy
-                       'flymake-create-temp-inplace))
-         (local-file  (file-relative-name
-                       temp-file
-                       (file-name-directory buffer-file-name))))
-    (list "ruby" (list "-c" local-file))))
-(push '(".+\\.rb$" flymake-ruby-init) flymake-allowed-file-name-masks)
-(push '("Rakefile$" flymake-ruby-init) flymake-allowed-file-name-masks)
-(push '("^\\(.*\\):\\([0-9]+\\): \\(.*\\)$" 1 2 nil 3) flymake-err-line-patterns)
+;; (add-to-list 'load-path "~/.emacs.d/flymake-ruby")
+;; (require 'flymake-ruby)
+;; (add-hook 'ruby-mode-hook 'flymake-ruby-load)
+;; ;;(require 'flymake)
+;; (defun flymake-ruby-init ()
+;;   (let* ((temp-file   (flymake-init-create-temp-buffer-copy
+;;                        'flymake-create-temp-inplace))
+;;          (local-file  (file-relative-name
+;;                        temp-file
+;;                        (file-name-directory buffer-file-name))))
+;;     (list "ruby" (list "-c" local-file))))
+;; (push '(".+\\.rb$" flymake-ruby-init) flymake-allowed-file-name-masks)
+;; (push '("Rakefile$" flymake-ruby-init) flymake-allowed-file-name-masks)
+;; (push '("^\\(.*\\):\\([0-9]+\\): \\(.*\\)$" 1 2 nil 3) flymake-err-line-patterns)
 (add-hook 'ruby-mode-hook
           (function
            (lambda ()
@@ -810,7 +816,7 @@ The key typed is executed unless it is SPC."
                                   (global-set-key [?\C-_] 'mike:toggle-font-bold)
 
                                   (mike:set-theme 'color-theme-solarized-dark)
-                                  (mike:set-font-size 9)
+                                  (mike:set-font-size 13)
                                   (mike:set-font-face "DejaVu Sans Mono")
                                   (mike:set-font-bold t)
                                   )
@@ -823,24 +829,26 @@ The key typed is executed unless it is SPC."
 (autoload 'camelCase-mode "camelCase-mode" nil t)
 (add-hook 'find-file-hook '(lambda () (camelCase-mode 1))) ; all files. (all buffers?)
 
-;;;
-;;;  rinari - emacs ruby on rails mode
-;;;
-;;(add-to-list 'load-path "~/.emacs.d/rinari")
-;;(setq rinari-minor-mode-prefixes (list "'"))
-;;(require 'rinari)
-;;(require 'ruby-compilation-rspec)
-;;(global-set-key (kbd "C-x C-M-f") 'find-file-in-project) ;; optional
+;; Interactively Do Things (highly recommended, but not strictly required)
+(require 'ido)
+(ido-mode t)
+     
+;; Rinari
+(add-to-list 'load-path "~/.emacs.d/rinari")
+(require 'rinari)
+
+(setq rinari-minor-mode-prefixes (list "'"))
+(require 'rinari)
+(require 'ruby-compilation-rspec)
+(global-set-key (kbd "C-x C-M-f") 'find-file-in-project) ;; optional
 
 (autoload 'js2-mode "js2" nil t)
 (add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
 
-
-
 (add-to-list 'load-path "~/.emacs.d/plugins/yasnippet")
 ;; Load the library
 (require 'yasnippet)
-(yas/initialize)
+(yas-global-mode 1)
 ;; Load the snippet files themselves
 (yas/load-directory "~/.emacs.d/plugins/yasnippet/snippets/text-mode")
 ;; Let's have snippets in the auto-complete dropdown
