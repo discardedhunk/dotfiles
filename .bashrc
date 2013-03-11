@@ -130,3 +130,5 @@ export EDITOR=emacs
 
 nvm use v0.8.15
 
+
+PATH=$PATH:$HOME/.rvm/bin # Add RVM to PATH for scripting

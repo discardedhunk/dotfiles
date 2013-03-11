@@ -17,5 +17,6 @@
 	editor = emacs
 [branch]
 	autosetuprebase = always
-[url "jason@git.spotify.net"]
-	insteadof = git@git.spotify.net
+[alias]
+	co = checkout
+	st = status

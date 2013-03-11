@@ -1,4 +1,4 @@
-export PATH=$HOME/bin:$HOME/.gem/ruby/1.8/bin:/usr/local/git/bin:/Applications/Emacs.app/Contents/MacOS/bin:/usr/share/source-highlight:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin:/usr/local/git/bin
+export PATH=$PATH:$HOME/.rvm/bin # Add RVM to PATH for scripting
 export GDAL_DATA=/opt/local/share
 export MANPATH=/opt/local/share/man:$MANPATH
 export CLOJURE_EXT=$HOME/.clojure
@@ -19,7 +19,7 @@ export LESS_TERMCAP_se=$'\E[0m'
 export LESS_TERMCAP_so=$'\E[01;44;33m'
 export LESS_TERMCAP_ue=$'\E[0m'
 export LESS_TERMCAP_us=$'\E[01;37m'
-export EDITOR='emacsclient'
+export EDITOR='emacs'
 export OOO_FORCE_DESKTOP=gnome # For OpenOffice to look more gtk-friendly.
 export BROWSER=google-chrome
 

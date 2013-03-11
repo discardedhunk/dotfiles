@@ -47,8 +47,8 @@ bindkey -e
 # end automatic options
 
 # Make prompt prettier
-autoload -U promptinit
-promptinit
+#autoload -U promptinit
+#promptinit
 
 . ~/.shell/aliases
 #. ~/.shell/completions
@@ -67,3 +67,11 @@ if [ `which fortune` ]; then
     fortune
     echo ""
 fi
+
+. ~/.nvm/nvm.sh
+nvm use v0.8.15
+
+PATH=$PATH:$HOME/.rvm/bin # Add RVM to PATH for scripting
+
+### Added by the Heroku Toolbelt
+export PATH="/usr/local/heroku/bin:$PATH"
